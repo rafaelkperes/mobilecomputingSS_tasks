@@ -8,29 +8,23 @@ def strtobin(strg):
                 strbin = "0"+strbin
 	return strbin
 
-def send(strg, setupcode, sleeptime):
+def send(strg, setupcode, sleeptime, factor):
 	GPIO.setmode(GPIO.BCM)
 	GPIO.setup(setupcode, GPIO.OUT)
         
  	#syncronize
  	while True:
-                #cnt = 0
-		if int(time.time()) % int(20 * sleeptime) == 0:
- 			#while cnt < len(strg):
+		if int(time.time() * factor) % int(20 * sleeptime * factor) == 0:
                         for c in strg:
 				#set time for sender 1
-				while not (int(time.time()) % int(20 * sleeptime) < (10 * sleeptime)):
-                                #the former if ....>0 is redundant, so we remove it
-                                #And we change the if to while
-                                #if the time for sending next char doesn't meet the condition
-                                #the program will be stuck at this line and wait for the right time
+                                while not (int(time.time() * factor) % int(20 * sleeptime * factor) < (10 * sleeptime * factor)):
+                                        pass
                                 
 				#starting code 01
 				GPIO.output(setupcode, GPIO.HIGH)
 				time.sleep(sleeptime)
 				GPIO.output(setupcode, GPIO.LOW)
 				time.sleep(sleeptime)
-				#c = strg[cnt]
 				asc = strtobin(c)
 				for b in asc:
 					print b
@@ -43,7 +37,7 @@ def send(strg, setupcode, sleeptime):
 				print c
 				time.sleep(sleeptime) # additional waiting time
 				GPIO.output(setupcode, GPIO.LOW)
-				#cnt += 1
 setupcode = 23
-sleeptime = 0.3 # sleeptime
-send("hello from sender 1", setupcode, sleeptime)
+sleeptime = 0.04 # sleeptime
+factor = 1000
+send("hello from sender 1", setupcode, sleeptime, factor)

@@ -28,5 +28,5 @@ def recv(setupcode, sleeptime):
 				strbin += str(value)
 			print bintostr(strbin)
 setupcode = 17
-sleeptime = 0.3
+sleeptime = 0.04
 recv(setupcode, sleeptime)
