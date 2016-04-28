@@ -2,51 +2,44 @@ import RPi.GPIO as GPIO
 import time
 import binascii as ba
 
-st = 1 # sleeptime
-
 def strtobin(strg):
-        strbin = bin(int(ba.hexlify(strg), 16))
-        return strbin
+	strbin = bin(int(ba.hexlify(strg), 16))[2:]
+	if len(strbin) == 6:
+                strbin = "0"+strbin
+	return strbin
 
-def send(strg, setupcode):
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setup(setupcode, GPIO.OUT)
+def send(strg, setupcode, sleeptime):
+	GPIO.setmode(GPIO.BCM)
+	GPIO.setup(setupcode, GPIO.OUT)
         
-        started = False
-        staux = False
-        while True:
-                for c in strg:
-                        output = GPIO.LOW         
-                        if int(time.time()) % 2 == 1:
-                                #starting code 01
-                                if not started:                                        
-                                        if not staux:
-                                                print "starting..."
-                                                output = GPIO.HIGH
-                                                staux = True
-                                        else:
-                                                output = GPIO.LOW
-                                                cnt = 0
-                                                staux = False
-                                                started = True
-                                                print "started!"
-                                elif started:
-                                        asc = strtobin(c)
-                                        b = asc[cnt]
-                                        print b                                        
-                                        if b == '1':
-                                                output = GPIO.LOW
-                                        elif b == '0':
-                                                output = GPIO.HIGH
-                                        if cnt == 7:
-                                                cnt = 0
-                                                started = False
-                                                staux = False
-                                        else:
-                                                cnt += 1                                        
+ 	#syncronize
+ 	while True:
+                cnt = 0
+		if int(time.time()) % int(20 * sleeptime) == 10 * sleeptime:
+ 			while cnt < len(strg):
+				#set time for sender 1
+				if (int(time.time()) % int(20 * sleeptime) >= (10 * sleeptime)) and int(time.time()) % int(20 * sleeptime) <= (19 * sleeptime):
                                         
-                        GPIO.output(setupcode, output)
-                        time.sleep(st)
+					#starting code 01
+					GPIO.output(setupcode, GPIO.HIGH)
+					time.sleep(sleeptime)
+					GPIO.output(setupcode, GPIO.LOW)
+					time.sleep(sleeptime)
+					c = strg[cnt]
+					asc = strtobin(c)
+					for b in asc:
+						print b
+						if b == '1':
+							GPIO.output(setupcode, GPIO.LOW)
+						elif b == '0':
+							GPIO.output(setupcode, GPIO.HIGH)
+						time.sleep(sleeptime)
+					print asc
+					print c
+					time.sleep(sleeptime) # additional waiting time
+					GPIO.output(setupcode, GPIO.LOW)
+					cnt += 1
+setupcode = 24
+sleeptime = 0.3 # sleeptime
+send("HELLO FROM SENDER 2", setupcode, sleeptime)
 
-setupcode = 23
-send("hello", setupcode)
