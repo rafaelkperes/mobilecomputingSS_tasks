@@ -39,8 +39,11 @@ def send(strg, setupcode, sleeptime, factor):
                                                 time.sleep(sleeptime)
 				print asc
 				print c
-				time.sleep(sleeptime) # additional waiting time
+				time.sleep(sleeptime) # additional waiting
 				GPIO.output(setupcode, GPIO.LOW)
+				#I think we should delete the waiting time(line 42) and GPIO.LOW(line 43)
+				#The waiting time will cause a reapted samling of last bit
+				#The GPIO.LOW will force two LEDs off, which will probably cause an unncessary bit at receiver
 setupcode = 23
 sleeptime = 3 # sleeptime
 factor = 1000
