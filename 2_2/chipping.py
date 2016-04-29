@@ -1,6 +1,34 @@
+import binascii as ba
+
+# LOGIC CONSTANTS
+charsize = 7
+chipsize = 2
+id1 = 0
+id2 = 1
+
+chipping = [[1, 1], [1, -1]]
+
+# ANALOGIC CONSTANTS
+boundaries = [100, 800]
+factor = 1000
+sleeptime = 0.1
+
+def strtobin(strg):
+	strbin = bin(int(ba.hexlify(strg), 16))[2:]
+	if len(strbin) == 6:
+                strbin = "0" + strbin
+	return strbin
+
+def bintostr(strg):
+	binstr = ba.unhexlify('%x' % int(strg, 2))
+	return binstr
+
+def startingcode(sending):
+	return "01" + sending
+
 def code(bits, chipping, num):
     newbits = []
-    mych = chipping[num]
+    mychipping = chipping[num]
     for b in bits:
         if b == "0":
             newbits.append(-1)
@@ -8,18 +36,18 @@ def code(bits, chipping, num):
             newbits.append(int(b))
     chippedbits = []
     for b in newbits:
-        for col in mych:
+        for col in mychipping:
             chippedbits.append(b * col)
     return chippedbits
     
 def decode(bits, chipping, num):
     decoded = []
-    mych = chipping[num]
-    for i in xrange(0, len(bits), 2):
-        num = 0
-        for j in range(len(mych)):
-            num += bits[i + j] * mych[j]
-        decoded.append(num)
+    mychipping = chipping[num]
+    for i in range(0, len(bits), 2):
+        acc = 0
+        for j in range(len(mychipping)):
+            acc += bits[i + j] * mychipping[j]
+        decoded.append(acc)
     for i in range(len(decoded)):
         if decoded[i] > 0:
             decoded[i] = 1
@@ -29,10 +57,9 @@ def decode(bits, chipping, num):
 
 if __name__ == "__main__":
     bits = "01001000"
-    chipping = [[1, 1], [1, -1]]
     print "Coding " + bits + ":"
     print printcode(bits, chipping, 0)
 
     chipped = [-2, 0, 2, 0, 0, -2, -2, 0, 2, 0, -2, 0, -2, 0, -2, 0]
     print "Decoding " + chipped + ":"
-	print decode(chipped, chipping, 0)
+	#print decode(chipped, chipping, 0)
