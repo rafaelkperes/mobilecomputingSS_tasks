@@ -5,12 +5,24 @@
  */
 package mc_a4;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
+import java.io.InputStreamReader;
+import java.io.ObjectInput;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutput;
+import java.io.ObjectOutputStream;
+import java.net.Inet4Address;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.util.Enumeration;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.logging.FileHandler;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
 
@@ -19,53 +31,135 @@ import java.util.logging.SimpleFormatter;
  * @author rafaelkperes
  */
 public class MC_A4 {
+    
+    public static final Logger LOGGER = Logger.getLogger("MCA4");
 
-    public static void send() throws SocketException, IOException {
-        DatagramSocket sock = new DatagramSocket();
-        sock.setBroadcast(true);
-        byte[] bcast_msg = null;
-        DatagramPacket packet = new DatagramPacket(
-                bcast_msg, bcast_msg.length,
-                InetAddress.getByName("192.168.24.255"),
-                5000 + 20
-        );
-        sock.send(packet);
+    public static InetAddress getIPfromInterface(String interfaceName) throws SocketException {
+        NetworkInterface networkInterface = NetworkInterface.getByName(interfaceName);
+        Enumeration<InetAddress> inetAddress = networkInterface.getInetAddresses();
+        InetAddress currentAddress;
+        while (inetAddress.hasMoreElements()) {
+            currentAddress = inetAddress.nextElement();
+            if (currentAddress instanceof Inet4Address && !currentAddress.isLoopbackAddress()) {
+                return currentAddress;
+            }
+        }
+        
+        return null;
     }
 
-    public static void recv() throws SocketException, IOException {
-        byte[] buf = null;
+    public static Boolean isMyIP(String ipString) throws SocketException, UnknownHostException {
+        InetAddress ip = InetAddress.getByName(ipString);
 
-        DatagramSocket sock = new DatagramSocket(5000 + 20);
-        DatagramPacket packet = new DatagramPacket(buf, buf.length);
-        while (true) {
-            sock.receive(packet);
-            packet.getData();
+        Enumeration e = NetworkInterface.getNetworkInterfaces();
+        while (e.hasMoreElements()) {
+            NetworkInterface n = (NetworkInterface) e.nextElement();
+            Enumeration ee = n.getInetAddresses();
+            while (ee.hasMoreElements()) {
+                InetAddress i = (InetAddress) ee.nextElement();
+                if (i.equals(ip)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    public static byte[] serializeContent(PacketContent content) throws IOException {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutput out = null;
+        try {
+            out = new ObjectOutputStream(bos);
+            out.writeObject(content);
+            byte[] _bytes = bos.toByteArray();
+            return _bytes;
+        } finally {
+            try {
+                if (out != null) {
+                    out.close();
+                }
+            } catch (IOException ex) {
+                // ignore close exception
+            }
+            try {
+                bos.close();
+            } catch (IOException ex) {
+                // ignore close exception
+            }
+        }
+    }
+
+    public static PacketContent deserializeContent(byte[] b) throws IOException, ClassNotFoundException {
+        ByteArrayInputStream bis = new ByteArrayInputStream(b);
+        ObjectInput in = null;
+        try {
+            in = new ObjectInputStream(bis);
+            PacketContent content = (PacketContent) in.readObject();
+            return content;
+        } finally {
+            try {
+                bis.close();
+            } catch (IOException ex) {
+                // ignore close exception
+            }
+            try {
+                if (in != null) {
+                    in.close();
+                }
+            } catch (IOException ex) {
+                // ignore close exception
+            }
         }
     }
 
     /**
      * @param args the command line arguments
+     * @throws java.io.IOException
+     * @throws java.lang.InterruptedException
      */
-    public static void main(String[] args) {
-        Logger logger = Logger.getLogger("As4Log");
+    public static void main(String[] args) throws IOException, InterruptedException {
         FileHandler fh;
 
+        /* LOGGER config */
         try {
 
-            // This block configure the logger with handler and formatter  
+            // This block configure the LOGGER with handler and formatter  
             fh = new FileHandler("as4.log");
-            logger.addHandler(fh);
+            LOGGER.addHandler(fh);
             SimpleFormatter formatter = new SimpleFormatter();
             fh.setFormatter(formatter);
-
             // the following statement is used to log any messages  
-            logger.info("My first log");
+            LOGGER.log(Level.INFO, "Logger started");
         } catch (SecurityException | IOException e) {
-            e.printStackTrace();
+            System.out.println("couldn't start LOGGER");
+            System.exit(2);
         }
-        
-        Thread recv = new Thread(new ReceiverThread(logger));
+
+        /* sender queue */
+        LinkedBlockingDeque<PacketContent> senderQ = new LinkedBlockingDeque<>();
+
+        /* starting receiver */
+        Thread recv = new Thread(new ReceiverThread(senderQ));
         recv.start();
-        
+
+        /* starting sender */
+        Thread send = new Thread(new SenderThread(senderQ));
+        send.start();
+
+        while (true) {
+            BufferedReader bufferRead = new BufferedReader(new InputStreamReader(System.in));
+            System.out.println("Content:");
+            String s = bufferRead.readLine();
+            System.out.println("Destination:");
+            String dest = bufferRead.readLine();
+            String origin = getIPfromInterface("wlan0").toString();
+
+            PacketContent content = new PacketContent(origin, dest, s.getBytes(),
+                    PacketContent.Type.CONTENT);
+            LOGGER.log(Level.INFO, "request to send: {0}", content);
+            senderQ.put(content);
+        }
+
     }
 }
