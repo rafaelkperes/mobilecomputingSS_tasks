@@ -20,8 +20,8 @@ import java.util.logging.Logger;
 public class ReceiverThread implements Runnable {
 
     private static final Logger LOGGER = Logger.getLogger("MCA4");
-    
-    private final LinkedBlockingDeque<PacketContent> packetsToSend;    
+
+    private final LinkedBlockingDeque<PacketContent> packetsToSend;
 
     public ReceiverThread(LinkedBlockingDeque<PacketContent> packetsToSend) {
         this.packetsToSend = packetsToSend;
@@ -38,16 +38,21 @@ public class ReceiverThread implements Runnable {
                 LOGGER.log(Level.INFO, "waiting for packet...");
                 sock.receive(packet);
                 byte[] b = packet.getData();
-                
+
                 PacketContent content = MC_A4.deserializeContent(b);
                 //ByteArrayInputStream bis = new ByteArrayInputStream(b);
                 //ObjectInput in = new ObjectInputStream(bis);
                 //PacketContent content = (PacketContent) in.readObject();
-                
+
                 LOGGER.log(Level.INFO, "received: {0}", content.toString());
-                
-                packetsToSend.put(content); // should it be 'packet' or 'content'?
-                LOGGER.log(Level.INFO, "added to sender queue: {0}", content.toString());
+
+                if (MC_A4.isMyIP(content.getDestination())) {
+                    LOGGER.log(Level.INFO, "PACKET REACHED DESTINATION: {0}", content.toString());
+                } else {
+                    /* rebroadcast packet! */
+                    packetsToSend.put(content); // should it be 'packet' or 'content'?
+                    LOGGER.log(Level.INFO, "added to sender queue: {0}", content.toString());
+                }
             }
         } catch (SocketException ex) {
             LOGGER.log(Level.SEVERE, null, ex);

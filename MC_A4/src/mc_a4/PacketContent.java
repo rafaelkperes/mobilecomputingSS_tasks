@@ -97,10 +97,8 @@ public class PacketContent implements Serializable {
                 + "id=" + id 
                 + ", originalsender=" + originalsender 
                 + ", destination=" + destination 
-                + ", content=" + Arrays.toString(content) 
+                + ", content=" + new String(content) 
                 + ", type=" + type + '}';
     }
-    
-    
     
 }

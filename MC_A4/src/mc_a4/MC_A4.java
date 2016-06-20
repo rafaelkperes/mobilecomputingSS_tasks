@@ -19,6 +19,7 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.logging.FileHandler;
@@ -31,21 +32,28 @@ import java.util.logging.SimpleFormatter;
  * @author rafaelkperes
  */
 public class MC_A4 {
-    
+
     public static final Logger LOGGER = Logger.getLogger("MCA4");
 
-    public static InetAddress getIPfromInterface(String interfaceName) throws SocketException {
-        NetworkInterface networkInterface = NetworkInterface.getByName(interfaceName);
-        Enumeration<InetAddress> inetAddress = networkInterface.getInetAddresses();
-        InetAddress currentAddress;
-        while (inetAddress.hasMoreElements()) {
-            currentAddress = inetAddress.nextElement();
-            if (currentAddress instanceof Inet4Address && !currentAddress.isLoopbackAddress()) {
-                return currentAddress;
+    public static String getIPfromInterface(String interfaceName) throws SocketException, UnknownHostException {
+        Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();
+        for (NetworkInterface netint : Collections.list(nets)) {
+            for (InetAddress inetAddress : Collections.list(netint.getInetAddresses())) {
+                String inetAStringString = inetAddress.getHostAddress();
+                if (inetAStringString.startsWith("192.168.")) {
+                    return inetAStringString;
+                }
             }
+            /*if (interfaceName.equalsIgnoreCase(netint.getName())) {
+                for (InetAddress inetAddress : Collections.list(netint.getInetAddresses())) {
+                    if (inetAddress instanceof Inet4Address && !inetAddress.isLoopbackAddress()) {
+                        return inetAddress.getHostAddress();
+                    }
+                }
+            }*/
         }
-        
-        return null;
+
+        return InetAddress.getLocalHost().getHostAddress();
     }
 
     public static Boolean isMyIP(String ipString) throws SocketException, UnknownHostException {
@@ -153,7 +161,7 @@ public class MC_A4 {
             String s = bufferRead.readLine();
             System.out.println("Destination:");
             String dest = bufferRead.readLine();
-            String origin = getIPfromInterface("wlan0").toString();
+            String origin = getIPfromInterface("wlan0");
 
             PacketContent content = new PacketContent(origin, dest, s.getBytes(),
                     PacketContent.Type.CONTENT);
