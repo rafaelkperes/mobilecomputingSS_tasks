@@ -14,7 +14,6 @@ import java.io.ObjectInput;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
-import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
@@ -134,6 +133,7 @@ public class MC_A4 {
 
             // This block configure the LOGGER with handler and formatter  
             fh = new FileHandler("as4.log");
+            LOGGER.setUseParentHandlers(false);
             LOGGER.addHandler(fh);
             SimpleFormatter formatter = new SimpleFormatter();
             fh.setFormatter(formatter);

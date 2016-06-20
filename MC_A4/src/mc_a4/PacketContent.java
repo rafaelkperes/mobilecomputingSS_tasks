@@ -14,17 +14,18 @@ import java.util.Objects;
  * @author rafaelkperes
  */
 public class PacketContent implements Serializable {
-    
+
     public enum Type {
         CONTENT,
         ACK
     }
-    
+
     private final Long id;
     private final String originalsender;
     private final String destination;
     private final byte[] content;
     private final Type type;
+    private Integer leap;
 
     /**
      *
@@ -40,6 +41,15 @@ public class PacketContent implements Serializable {
         this.destination = destination;
         this.content = content;
         this.type = type;
+        this.leap = 0;
+    }
+
+    public void leap() {
+        leap++;
+    }
+
+    public Integer getLeap() {
+        return leap;
     }
 
     public String getOriginalsender() {
@@ -93,12 +103,7 @@ public class PacketContent implements Serializable {
 
     @Override
     public String toString() {
-        return "PacketContent{" 
-                + "id=" + id 
-                + ", originalsender=" + originalsender 
-                + ", destination=" + destination 
-                + ", content=" + new String(content) 
-                + ", type=" + type + '}';
+        return "PacketContent{" + "id=" + id + ", originalsender=" + originalsender + ", destination=" + destination + ", content=" + new String(content) + ", type=" + type + ", leap=" + leap + '}';
     }
-    
+
 }

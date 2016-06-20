@@ -40,17 +40,25 @@ public class SenderThread implements Runnable {
             DatagramSocket sock = new DatagramSocket();
             sock.setBroadcast(true);
 
-            while (true) {
+            while (true) {                
                 PacketContent content = packetsToSend.take();
 
                 if (!alreadySent.contains(content)) {
                     LOGGER.log(Level.INFO, "trying to send: {0}", content);
+                    System.out.println("sending: " + new String(content.getContent()));
+                    System.out.println("from: " + content.getOriginalsender()+ " to: " + content.getDestination());
+                    content.leap();
                     byte[] bcast_msg = MC_A4.serializeContent(content);
                     DatagramPacket packet = new DatagramPacket(bcast_msg,
                             bcast_msg.length, InetAddress.getByName("192.168.24.255"),
                             5000 + 20
                     );
-                    sock.send(packet);
+                    
+                    for (int i = 0; i < 100; i++) {
+                        sock.send(packet);
+                        Thread.sleep(10);
+                    }
+                    
                     alreadySent.add(content);
                     LOGGER.log(Level.INFO, "packet sent");
                 } else {
