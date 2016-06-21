@@ -38,7 +38,7 @@ public class ReceiverThread implements Runnable {
             DatagramSocket sock = new DatagramSocket(5000 + 20);
             DatagramPacket packet = new DatagramPacket(buf, buf.length);
             while (true) {
-                LOGGER.log(Level.INFO, "waiting for packet...");
+                //LOGGER.log(Level.INFO, "waiting for packet...");
                 sock.receive(packet);
                 byte[] b = packet.getData();
 
