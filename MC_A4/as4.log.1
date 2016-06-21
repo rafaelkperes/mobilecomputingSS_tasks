@@ -1,0 +1,27 @@
+Jun 21, 2016 6:05:40 PM mc_a4.MC_A4 main
+INFO: Logger started
+Jun 21, 2016 6:05:40 PM mc_a4.ReceiverThread run
+INFO: Receiver thread started!
+Jun 21, 2016 6:05:40 PM mc_a4.SenderThread run
+INFO: Sender thread started!
+Jun 21, 2016 6:05:40 PM mc_a4.ReceiverThread run
+SEVERE: null
+java.net.BindException: Address already in use: Cannot bind
+	at java.net.DualStackPlainDatagramSocketImpl.socketBind(Native Method)
+	at java.net.DualStackPlainDatagramSocketImpl.bind0(DualStackPlainDatagramSocketImpl.java:81)
+	at java.net.AbstractPlainDatagramSocketImpl.bind(AbstractPlainDatagramSocketImpl.java:96)
+	at java.net.DatagramSocket.bind(DatagramSocket.java:396)
+	at java.net.DatagramSocket.<init>(DatagramSocket.java:251)
+	at java.net.DatagramSocket.<init>(DatagramSocket.java:304)
+	at java.net.DatagramSocket.<init>(DatagramSocket.java:276)
+	at mc_a4.ReceiverThread.run(ReceiverThread.java:48)
+	at java.lang.Thread.run(Thread.java:745)
+
+Jun 21, 2016 6:05:47 PM mc_a4.MC_A4 main
+INFO: request to send: PacketContent{id=1466525147164, originalsender=129.69.184.172, destination=1.1.1.1, content=asdf, type=CONTENT, leap=0}
+Jun 21, 2016 6:05:47 PM mc_a4.SenderThread run
+INFO: sending: PacketContent{id=1466525147166, originalsender=129.69.184.172, destination=1.1.1.1, content=, type=ROUTE_REQUEST, leap=1}
+Jun 21, 2016 6:05:57 PM mc_a4.MC_A4 main
+INFO: request to send: PacketContent{id=1466525157096, originalsender=129.69.184.172, destination=129.69.184.172, content=asdfaf, type=CONTENT, leap=0}
+Jun 21, 2016 6:05:57 PM mc_a4.SenderThread run
+INFO: sending: PacketContent{id=1466525157097, originalsender=129.69.184.172, destination=129.69.184.172, content=, type=ROUTE_REQUEST, leap=1}

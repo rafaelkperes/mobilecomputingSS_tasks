@@ -20,6 +20,9 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
@@ -39,7 +42,7 @@ public class MC_A4 {
         for (NetworkInterface netint : Collections.list(nets)) {
             for (InetAddress inetAddress : Collections.list(netint.getInetAddresses())) {
                 String inetAStringString = inetAddress.getHostAddress();
-                if (inetAStringString.startsWith("192.168.")) {
+                if (inetAStringString.startsWith("192.168.24")) {
                     return inetAStringString;
                 }
             }
@@ -144,15 +147,19 @@ public class MC_A4 {
             System.exit(2);
         }
 
+        /* Task 2 - Route Cache */
+        ConcurrentHashMap<String, List<String>> routeCache = new ConcurrentHashMap<>();
+        ConcurrentHashMap<Long, PacketContent> waitingForRoute = new ConcurrentHashMap<>();
+
         /* sender queue */
         LinkedBlockingDeque<PacketContent> senderQ = new LinkedBlockingDeque<>();
 
         /* starting receiver */
-        Thread recv = new Thread(new ReceiverThread(senderQ));
+        Thread recv = new Thread(new ReceiverThread(senderQ, routeCache, waitingForRoute));
         recv.start();
 
         /* starting sender */
-        Thread send = new Thread(new SenderThread(senderQ));
+        Thread send = new Thread(new SenderThread(senderQ, routeCache, waitingForRoute));
         send.start();
 
         while (true) {

@@ -6,7 +6,9 @@
 package mc_a4;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -16,9 +18,12 @@ import java.util.Objects;
 public class PacketContent implements Serializable {
 
     public enum Type {
-        CONTENT,
-        ACK
+        ROUTE_REQUEST,
+        ROUTE_REPLY,
+        CONTENT
     }
+    
+    private List<String> route;
 
     private final Long id;
     private final String originalsender;
@@ -42,10 +47,60 @@ public class PacketContent implements Serializable {
         this.content = content;
         this.type = type;
         this.leap = 0;
+
+        this.route = new ArrayList<>();
     }
 
+    public PacketContent(Long id, String originalsender, String destination,
+            Type type, List<String> route) {
+        this.id = id;
+        this.originalsender = originalsender;
+        this.destination = destination;
+        this.content = "".getBytes();
+        this.type = type;
+        this.leap = 0;
+
+        this.route = route;
+    }
+
+    /* Task 2 */
+    public void addToRoute(String ip) {
+        this.route.add(ip);
+    }
+
+    public void setRoute(List<String> route) {
+        this.route = route;
+    }
+    
+    public String getNextOnRoute(String selfIp) {
+        int pos = route.indexOf(selfIp);
+        return route.get(pos + 1);
+    }
+
+    public String getPreviousOnRoute(String selfIp) {
+        int pos = route.indexOf(selfIp);
+        return route.get(pos - 1);
+    }
+
+    public List<String> getRoute() {
+        return route;
+    }
+    
+    public boolean hasRoute() {
+        return !(route == null || route.isEmpty());
+    }
+
+    /* End of Task 2 */
     public void leap() {
         leap++;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public Type getType() {
+        return type;
     }
 
     public Integer getLeap() {
@@ -103,7 +158,7 @@ public class PacketContent implements Serializable {
 
     @Override
     public String toString() {
-        return "PacketContent{" + "id=" + id + ", originalsender=" + originalsender + ", destination=" + destination + ", content=" + new String(content) + ", type=" + type + ", leap=" + leap + '}';
+        return "PacketContent{" + "id=" + id + ", originalsender=" + originalsender + ", destination=" + destination + ", content=" + new String(content) + ", type=" + type + ", leap=" + leap + ", route=" + route + '}';
     }
 
 }
